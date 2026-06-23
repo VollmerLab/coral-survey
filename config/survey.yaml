@@ -1,0 +1,30 @@
+app:
+  port: 8080
+  host: "0.0.0.0"
+
+database:
+  path: "data/survey.db"
+
+sam:
+  model_path: "models/sam_vit_b.pth"
+  model_type: "vit_b"
+  points_per_side: 16
+  pred_iou_thresh: 0.86
+  stability_score_thresh: 0.92
+  min_mask_region_area: 500
+
+# Card physical dimensions in mm — do not hardcode these in code
+cards:
+  whibal_g7_wallet:
+    width_mm: 53.3
+    height_mm: 85.1
+    l_star_ref: 49.5       # 18% gray under D65
+  cr80:
+    width_mm: 85.6
+    height_mm: 54.0
+
+# Pipeline defaults
+survey:
+  whibal_corner: "lower-left"     # position prior for card search
+  search_fraction: 0.35           # fraction of frame to search in corner
+  duplicate_suffix_pattern: "[ab]"  # filename suffixes marking duplicates

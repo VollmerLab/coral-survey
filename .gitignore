@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+venv/
+.venv/
+
+# Data — large, machine-specific
+data/survey.db
+data/masks/
+data/training_dataset/
+data/training.log
+
+# Model weights — download separately (~375 MB)
+models/
+
+# Raw photos — store on external drive / server
+photos/
+raw/
+
+# Secrets / local config overrides
+config/local.yaml
+.env

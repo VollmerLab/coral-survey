@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coral Survey Review</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>Coral Survey Review</h1>
+  <select id="session-select" class="session-select" onchange="App.selectSession(this.value || null)">
+    <option value="">— select session —</option>
+  </select>
+  <button class="btn btn-import" onclick="App.openModal('import-modal')">Import Session</button>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('review', this)">Review</button>
+    <button class="tab-btn" onclick="switchTab('training', this)">Training</button>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- Sidebar: coral list -->
+  <div class="sidebar" id="review-sidebar">
+    <div class="sidebar-header">
+      <span>Photos</span>
+      <span id="progress-label" style="color:var(--text)">0 / 0</span>
+    </div>
+    <div class="coral-list" id="coral-list"></div>
+  </div>
+
+  <!-- Canvas area -->
+  <div class="canvas-area" id="review-canvas-area">
+    <div id="canvas-wrap">
+      <canvas id="main-canvas"></canvas>
+      <div class="canvas-hint">Click to add SAM prompt &nbsp;·&nbsp; Shift+click for background &nbsp;·&nbsp; Right-click to undo</div>
+    </div>
+    <div class="action-bar">
+      <span class="progress-label" id="action-progress"></span>
+      <span id="loading-spinner" class="spinner hidden"></span>
+      <button class="btn btn-clear" onclick="App.clearPoints()">Reset mask</button>
+      <button class="btn btn-skip"    id="btn-skip"    onclick="App.skipCoral()" disabled>Skip</button>
+      <button class="btn btn-confirm" id="btn-confirm" onclick="App.confirmCoral()" disabled>Confirm ✓</button>
+    </div>
+  </div>
+
+  <!-- Right panel: metadata + metrics -->
+  <div class="right-panel" id="review-right">
+    <div class="panel-section">
+      <h3>Identity</h3>
+      <label>Genotype ID</label>
+      <input type="text" id="geno-input" placeholder="e.g. AC_G004">
+      <label style="margin-top:8px">Species</label>
+      <input type="text" id="species-input" placeholder="e.g. Acropora cervicornis">
+    </div>
+
+    <div class="panel-section">
+      <h3>Quality</h3>
+      <div class="quality-btns">
+        <div class="quality-btn selected-ok" data-flag="ok" onclick="App.setQuality('ok')">OK</div>
+        <div class="quality-btn" data-flag="uncertain" onclick="App.setQuality('uncertain')">?</div>
+        <div class="quality-btn" data-flag="bad" onclick="App.setQuality('bad')">Bad</div>
+      </div>
+      <label style="margin-top:8px">Notes</label>
+      <textarea id="notes-input" placeholder="e.g. partial bleaching, blurry edge"></textarea>
+    </div>
+
+    <div class="panel-section">
+      <h3>Metrics</h3>
+      <div class="metrics-grid">
+        <div class="metric-cell"><div class="mkey">L*</div><div class="mval" id="m-l">—</div></div>
+        <div class="metric-cell"><div class="mkey">a*</div><div class="mval" id="m-a">—</div></div>
+        <div class="metric-cell"><div class="mkey">b*</div><div class="mval" id="m-b">—</div></div>
+        <div class="metric-cell"><div class="mkey">area cm²</div><div class="mval" id="m-area">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Training tab (hidden until activated) -->
+  <div class="training-tab hidden" id="training-panel" style="flex:1;overflow-y:auto">
+    <h2 style="font-size:1rem;margin-bottom:4px">ML Training</h2>
+    <p style="font-size:0.82rem;color:var(--text-dim)">Confirmed mask+image pairs train a fine-tuned SAM model for better auto-segmentation.</p>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div class="stat-card" style="flex:1">
+        <div class="stat-num" id="t-confirmed">—</div>
+        <div class="stat-label">Confirmed pairs</div>
+      </div>
+      <div class="stat-card" style="flex:1">
+        <div class="stat-num" id="t-running">—</div>
+        <div class="stat-label">Training status</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-import" onclick="App.exportDataset()">Export dataset</button>
+      <button class="btn btn-confirm" onclick="App.startTraining()">Start training</button>
+      <button class="btn btn-clear" onclick="App.refreshTrainingStatus()">Refresh</button>
+    </div>
+
+    <div>
+      <div style="font-size:0.78rem;color:var(--text-dim);margin-bottom:6px">Training log</div>
+      <div id="log-box">No log yet.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Import session modal -->
+<div class="modal-overlay" id="import-modal">
+  <div class="modal">
+    <h2>Import Photo Session</h2>
+    <div>
+      <label>Session name</label>
+      <input type="text" id="import-name" placeholder="e.g. Carysfort 2026-06-15">
+    </div>
+    <div>
+      <label>Site</label>
+      <input type="text" id="import-site" placeholder="e.g. Carysfort South">
+    </div>
+    <div>
+      <label>Folder path (on server)</label>
+      <input type="text" id="import-folder" placeholder="/data/photos/carysfort_20260615">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-clear" onclick="App.closeModal('import-modal')">Cancel</button>
+      <button class="btn btn-confirm" onclick="App.importSession()">Import</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="review.js"></script>
+<script>
+function switchTab(tab, btn) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  const reviewEls = ["review-sidebar", "review-canvas-area", "review-right"];
+  reviewEls.forEach(id => document.getElementById(id)?.classList.toggle("hidden", tab !== "review"));
+  document.getElementById("training-panel").classList.toggle("hidden", tab !== "training");
+
+  if (tab === "training") App.refreshTrainingStatus();
+}
+
+// Init on load
+window.addEventListener("DOMContentLoaded", () => {
+  // App loaded via ES module — wait a tick for module to register
+  setTimeout(() => App.loadSessions(), 50);
+});
+</script>
+
+</body>
+</html>
