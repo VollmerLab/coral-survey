@@ -96,7 +96,6 @@ def auto_mask(coral_id: int, request: Request):
             # Return top 5 masks as PNG b64 for the UI to render
             results = []
             for m in masks[:5]:
-                png = mask_to_png_bytes(m["predicted_iou"] > 0 if "predicted_iou" in m else m["segmentation"])
                 png = mask_to_png_bytes(m["segmentation"])
                 results.append({
                     "mask_b64": base64.b64encode(png).decode(),
