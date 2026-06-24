@@ -55,6 +55,15 @@ def exif_datetime(path: str | Path) -> datetime | None:
 
 
 _DUP_RE = re.compile(r"^(.+?)([ab])(\.[^.]+)$", re.IGNORECASE)
+_NURSERY_RE = re.compile(r"^([A-Za-z]+)(\d+\.\d+)[ab]?$", re.IGNORECASE)
+
+
+def parse_nursery_id(stem: str) -> str | None:
+    """E2.1a → 'E2.1', J9.5 → 'J9.5'. Returns None if not a nursery filename."""
+    m = _NURSERY_RE.match(stem)
+    if m:
+        return m.group(1).upper() + m.group(2)
+    return None
 
 
 def group_duplicates(paths: list[Path]) -> dict[str, list[Path]]:

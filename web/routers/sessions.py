@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from pipeline.db import db_conn, list_sessions, create_session, insert_coral
-from pipeline.ingest import collect_jpgs, group_duplicates, pick_sharpest, exif_datetime
+from pipeline.ingest import collect_jpgs, group_duplicates, pick_sharpest, exif_datetime, parse_nursery_id
 
 router = APIRouter()
 
@@ -100,9 +100,12 @@ def import_session(req: ImportRequest):
         coral_count = 0
         for base, paths in groups.items():
             sorted_paths = sorted(str(p) for p in paths)
+            stem = Path(sorted_paths[0]).stem
+            genotype_id = parse_nursery_id(stem)
             kwargs: dict = {
                 "best_photo_path": sorted_paths[0],
                 "photo_a_path": sorted_paths[0],
+                "genotype_id": genotype_id,
             }
             if len(sorted_paths) >= 2:
                 kwargs["photo_b_path"] = sorted_paths[1]
