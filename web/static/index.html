@@ -110,19 +110,32 @@
 
 <!-- Import session modal -->
 <div class="modal-overlay" id="import-modal">
-  <div class="modal">
+  <div class="modal" style="width:520px;max-width:95vw">
     <h2>Import Photo Session</h2>
+
+    <!-- Discovered folders list -->
     <div>
-      <label>Session name</label>
-      <input type="text" id="import-name" placeholder="e.g. Carysfort 2026-06-15">
+      <label>Available folders <span id="discover-status" style="color:var(--text-dim);font-size:0.75rem"></span></label>
+      <div id="folder-list" style="
+        background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);
+        max-height:200px;overflow-y:auto;margin-bottom:8px">
+        <div style="padding:10px;color:var(--text-dim);font-size:0.82rem">Loading…</div>
+      </div>
     </div>
-    <div>
-      <label>Site</label>
-      <input type="text" id="import-site" placeholder="e.g. Carysfort South">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div>
+        <label>Session name</label>
+        <input type="text" id="import-name" placeholder="e.g. Tavernier Sep 2025">
+      </div>
+      <div>
+        <label>Site</label>
+        <input type="text" id="import-site" placeholder="e.g. Tavernier">
+      </div>
     </div>
-    <div>
+    <div style="margin-top:8px">
       <label>Folder path (on server)</label>
-      <input type="text" id="import-folder" placeholder="/data/photos/carysfort_20260615">
+      <input type="text" id="import-folder" placeholder="/mnt/onefs/groups/vollmer_lab/photos/…" style="font-size:0.75rem">
     </div>
     <div class="modal-actions">
       <button class="btn btn-clear" onclick="App.closeModal('import-modal')">Cancel</button>

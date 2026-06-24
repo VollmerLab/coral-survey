@@ -403,8 +403,52 @@ function streamLog() {
 
 // ── Modal helpers ─────────────────────────────────────────────────
 
-export function openModal(id) { document.getElementById(id).classList.add("open"); }
+export function openModal(id) {
+  document.getElementById(id).classList.add("open");
+  if (id === "import-modal") loadDiscoveredFolders();
+}
 export function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+
+async function loadDiscoveredFolders() {
+  const list = document.getElementById("folder-list");
+  const status = document.getElementById("discover-status");
+  list.innerHTML = '<div style="padding:10px;color:var(--text-dim);font-size:0.82rem">Scanning…</div>';
+  try {
+    const resp = await fetch(`${API}/api/sessions/discover`);
+    const data = await resp.json();
+    const folders = data.folders || [];
+    status.textContent = `${folders.length} found`;
+    if (folders.length === 0) {
+      list.innerHTML = '<div style="padding:10px;color:var(--text-dim);font-size:0.82rem">No photo folders found</div>';
+      return;
+    }
+    list.innerHTML = "";
+    for (const f of folders) {
+      const item = document.createElement("div");
+      item.style.cssText = "padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:0.82rem;display:flex;align-items:center;gap:10px;transition:background 0.1s";
+      item.onmouseover = () => item.style.background = "var(--surface2)";
+      item.onmouseout  = () => item.style.background = "";
+      item.innerHTML = `
+        <div style="flex:1;overflow:hidden">
+          <div style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.folder_name}</div>
+          <div style="color:var(--text-dim);font-size:0.75rem">${f.jpg_count} photos${f.date ? " · " + f.date : ""}</div>
+        </div>
+        <div style="color:var(--accent2);font-size:0.75rem;white-space:nowrap">Select →</div>
+      `;
+      item.onclick = () => {
+        document.getElementById("import-folder").value = f.path;
+        document.getElementById("import-name").value  = f.name;
+        document.getElementById("import-site").value  = f.site;
+        document.querySelectorAll("#folder-list > div").forEach(el => el.style.background = "");
+        item.style.background = "var(--surface2)";
+        item.style.borderLeft = "3px solid var(--accent2)";
+      };
+      list.appendChild(item);
+    }
+  } catch (e) {
+    list.innerHTML = `<div style="padding:10px;color:var(--bad);font-size:0.82rem">Error: ${e.message}</div>`;
+  }
+}
 
 // ── Resize handler ────────────────────────────────────────────────
 
