@@ -100,17 +100,12 @@ def import_session(req: ImportRequest):
         coral_count = 0
         for base, paths in groups.items():
             sorted_paths = sorted(str(p) for p in paths)
-            best = sorted_paths[0]  # pick 'a' shot; sharpness computed on first review load
-            exif_t = exif_datetime(Path(best))
-
             kwargs: dict = {
-                "best_photo_path": best,
-                "exif_time": exif_t.isoformat() if exif_t else None,
+                "best_photo_path": sorted_paths[0],
                 "photo_a_path": sorted_paths[0],
             }
             if len(sorted_paths) >= 2:
                 kwargs["photo_b_path"] = sorted_paths[1]
-
             insert_coral(conn, session_id, **kwargs)
             coral_count += 1
 
