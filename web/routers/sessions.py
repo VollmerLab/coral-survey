@@ -99,21 +99,17 @@ def import_session(req: ImportRequest):
         groups = group_duplicates(jpgs)
         coral_count = 0
         for base, paths in groups.items():
-            best = pick_sharpest(paths)
-            if best is None:
-                continue
-            exif_t = exif_datetime(best)
+            sorted_paths = sorted(str(p) for p in paths)
+            best = sorted_paths[0]  # pick 'a' shot; sharpness computed on first review load
+            exif_t = exif_datetime(Path(best))
 
             kwargs: dict = {
-                "best_photo_path": str(best),
+                "best_photo_path": best,
                 "exif_time": exif_t.isoformat() if exif_t else None,
+                "photo_a_path": sorted_paths[0],
             }
-            if len(paths) >= 2:
-                sorted_paths = sorted(str(p) for p in paths)
-                kwargs["photo_a_path"] = sorted_paths[0]
+            if len(sorted_paths) >= 2:
                 kwargs["photo_b_path"] = sorted_paths[1]
-            else:
-                kwargs["photo_a_path"] = str(paths[0])
 
             insert_coral(conn, session_id, **kwargs)
             coral_count += 1
