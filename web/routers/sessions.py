@@ -30,7 +30,7 @@ def import_session(req: ImportRequest):
     if not folder.exists():
         raise HTTPException(404, f"Folder not found: {req.folder_path}")
 
-    jpgs = collect_jpgs(folder)
+    jpgs = collect_jpgs(folder, recursive=True)
     if not jpgs:
         raise HTTPException(400, "No JPG files found in folder")
 
